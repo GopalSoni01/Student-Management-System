@@ -3,25 +3,45 @@ package com.sms.student_management;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 @Entity
 @Table(name = "students")
 public class Student {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
-//    private String name;
+//    @Id
+//    @GeneratedValue(strategy = GenerationType.IDENTITY)
+//    private Long id;
+//
+////    private String name;
+////    private String email;
+////    private String course;
+//@NotBlank(message = "Name cannot be empty")
+//private String name;
+//
+//    @Email(message = "Email should be valid")
+//    @NotBlank(message = "Email cannot be empty")
 //    private String email;
+//
+//    @NotBlank(message = "Course cannot be empty")
 //    private String course;
-@NotBlank(message = "Name cannot be empty")
-private String name;
+@Id
+@GeneratedValue(strategy = GenerationType.IDENTITY)
+private Long id;
 
-    @Email(message = "Email should be valid")
-    @NotBlank(message = "Email cannot be empty")
+    @NotBlank(message = "Name is required")
+    private String name;
+
+    @NotBlank(message = "Email is required")
+    @Email(message = "Email is not valid")
+    @Pattern(
+            regexp = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$",
+            message = "Email is not valid"
+    )
+    @Column(unique = true)
     private String email;
 
-    @NotBlank(message = "Course cannot be empty")
+
+    @NotBlank(message = "Course is required")
     private String course;
 
     // getters and setters

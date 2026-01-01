@@ -18,7 +18,15 @@ public class StudentService {
     }
 
     // Save student
+//    public Student saveStudent(Student student) {
+//        return studentRepository.save(student);
+//    }
     public Student saveStudent(Student student) {
+
+        if (studentRepository.existsByEmail(student.getEmail())) {
+            throw new RuntimeException("This email already exists");
+        }
+
         return studentRepository.save(student);
     }
 
@@ -43,23 +51,41 @@ public class StudentService {
     }
 
     // UPDATE student
+//    public Student updateStudent(Long id, Student updatedStudent) {
+//
+//        // Step 1: Find existing student
+//        Student existingStudent = studentRepository.findById(id).orElse(null);
+//
+//        // Step 2: If student exists, update fields
+//        if (existingStudent != null) {
+//            existingStudent.setName(updatedStudent.getName());
+//            existingStudent.setEmail(updatedStudent.getEmail());
+//            existingStudent.setCourse(updatedStudent.getCourse());
+//
+//            // Step 3: Save updated student
+//            return studentRepository.save(existingStudent);
+//        }
+//
+//        // Step 4: If student not found
+//        return null;
+//    }
     public Student updateStudent(Long id, Student updatedStudent) {
 
-        // Step 1: Find existing student
-        Student existingStudent = studentRepository.findById(id).orElse(null);
+        Student existingStudent = studentRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Student not found"));
 
-        // Step 2: If student exists, update fields
-        if (existingStudent != null) {
-            existingStudent.setName(updatedStudent.getName());
-            existingStudent.setEmail(updatedStudent.getEmail());
-            existingStudent.setCourse(updatedStudent.getCourse());
-
-            // Step 3: Save updated student
-            return studentRepository.save(existingStudent);
+        if (!existingStudent.getEmail().equals(updatedStudent.getEmail())) {
+            if (studentRepository.existsByEmail(updatedStudent.getEmail())) {
+                throw new RuntimeException("This email already exists");
+            }
         }
 
-        // Step 4: If student not found
-        return null;
+        existingStudent.setName(updatedStudent.getName());
+        existingStudent.setEmail(updatedStudent.getEmail());
+        existingStudent.setCourse(updatedStudent.getCourse());
+
+        return studentRepository.save(existingStudent);
     }
+
 
 }
