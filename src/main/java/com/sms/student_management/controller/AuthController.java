@@ -5,6 +5,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
+import com.sms.student_management.jwt.JwtUtil;
 
 import com.sms.student_management.entity.User;
 import com.sms.student_management.repository.UserRepository;
@@ -16,13 +17,16 @@ public class AuthController {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
+    private final JwtUtil jwtUtil;
 
     public AuthController(UserRepository userRepository,
                           PasswordEncoder passwordEncoder,
-                          AuthenticationManager authenticationManager) {
+                          AuthenticationManager authenticationManager,
+                          JwtUtil jwtUtil) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.authenticationManager = authenticationManager;
+        this.jwtUtil = jwtUtil;
     }
 
     // SIGNUP
@@ -53,9 +57,10 @@ public class AuthController {
         );
 
         if (authentication.isAuthenticated()) {
-            return "Login successful";
+            return jwtUtil.generateToken(user.getEmail());
         }
 
-        return "Invalid credentials";
+        throw new RuntimeException("Invalid credentials");
     }
+
 }
