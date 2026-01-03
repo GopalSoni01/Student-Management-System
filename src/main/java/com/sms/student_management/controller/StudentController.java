@@ -26,9 +26,10 @@ public class StudentController {
 
     // READ - Get all students
     @GetMapping
-    public List<Student> getAllStudents() {
-        return studentService.getAllStudents();
+    public List<Student> getStudents() {
+        return studentService.getStudentsBasedOnRole();
     }
+
 
     // READ - Get student by ID
     @GetMapping("/{id}")

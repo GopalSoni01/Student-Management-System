@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Students</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        table {
+            border-collapse: collapse;
+            width: 90%;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #333;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        button {
+            margin-top: 15px;
+            padding: 6px 12px;
+        }
+    </style>
+</head>
+<body>
+
+<h2>Students List</h2>
+
+<button onclick="logout()">Logout</button>
+
+<p id="message"></p>
+
+<table id="studentsTable">
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th>Name</th>
+        <th>Email</th>
+        <th>Course</th>
+    </tr>
+    </thead>
+    <tbody>
+    <!-- Student data will come here -->
+    </tbody>
+</table>
+
+<script>
+    // STEP 1: Get token from localStorage
+    const token = localStorage.getItem("token");
+
+    // STEP 2: If token not present, redirect to login page
+    if (!token) {
+        window.location.href = "/login.html";
+    }
+
+    // STEP 3: Call protected students API
+    fetch("http://localhost:8080/students", {
+        method: "GET",
+        headers: {
+            "Authorization": "Bearer " + token
+        }
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error("Unauthorized or session expired");
+        }
+        return response.json();
+    })
+    .then(data => {
+        const tbody = document.querySelector("#studentsTable tbody");
+
+        // Clear existing rows (safety)
+        tbody.innerHTML = "";
+
+        data.forEach(student => {
+            const row = document.createElement("tr");
+
+            row.innerHTML = `
+                <td>${student.id}</td>
+                <td>${student.name}</td>
+                <td>${student.email}</td>
+                <td>${student.course}</td>
+            `;
+
+            tbody.appendChild(row);
+        });
+    })
+    .catch(error => {
+        document.getElementById("message").innerText =
+            "Session expired or unauthorized. Please login again.";
+
+        localStorage.removeItem("token");
+
+        setTimeout(() => {
+            window.location.href = "/login.html";
+        }, 2000);
+    });
+
+    // STEP 4: Logout function
+    function logout() {
+        localStorage.removeItem("token");
+        window.location.href = "/login.html";
+    }
+</script>
+
+</body>
+</html>

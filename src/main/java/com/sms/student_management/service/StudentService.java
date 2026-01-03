@@ -1,7 +1,10 @@
 package com.sms.student_management.service;
 
 import java.util.List;
+import java.util.Optional;
 
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import com.sms.student_management.Student;
@@ -12,15 +15,14 @@ public class StudentService {
 
     private final StudentRepository studentRepository;
 
-    // Constructor Injection (BEST PRACTICE)
+    // Constructor Injection
     public StudentService(StudentRepository studentRepository) {
         this.studentRepository = studentRepository;
     }
 
-    // Save student
-//    public Student saveStudent(Student student) {
-//        return studentRepository.save(student);
-//    }
+    // =========================
+    // SAVE STUDENT (with email check)
+    // =========================
     public Student saveStudent(Student student) {
 
         if (studentRepository.existsByEmail(student.getEmail())) {
@@ -30,45 +32,42 @@ public class StudentService {
         return studentRepository.save(student);
     }
 
-    // Get all students
-    public List<Student> getAllStudents() {
-        return studentRepository.findAll();
+    // =========================
+    // ROLE-BASED FETCH (NEW)
+    // =========================
+    public List<Student> getStudentsBasedOnRole() {
+
+        Authentication authentication =
+                SecurityContextHolder.getContext().getAuthentication();
+
+        String email = authentication.getName();
+
+        boolean isAdmin = authentication.getAuthorities().stream()
+                .anyMatch(auth -> auth.getAuthority().equals("ROLE_ADMIN"));
+
+        // ADMIN → ALL STUDENTS
+        if (isAdmin) {
+            return studentRepository.findAll();
+        }
+
+        // STUDENT → ONLY OWN DATA
+        Optional<Student> student =
+                studentRepository.findByEmail(email);
+
+        return student.map(List::of).orElse(List.of());
     }
 
-    // Get student by ID
-//    public Student getStudentById(Long id) {
-//        return studentRepository.findById(id).orElse(null);
-//    }
+    // =========================
+    // GET STUDENT BY ID
+    // =========================
     public Student getStudentById(Long id) {
         return studentRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Student not found with id " + id));
     }
 
-
-    // Delete student by ID
-    public void deleteStudent(Long id) {
-        studentRepository.deleteById(id);
-    }
-
-    // UPDATE student
-//    public Student updateStudent(Long id, Student updatedStudent) {
-//
-//        // Step 1: Find existing student
-//        Student existingStudent = studentRepository.findById(id).orElse(null);
-//
-//        // Step 2: If student exists, update fields
-//        if (existingStudent != null) {
-//            existingStudent.setName(updatedStudent.getName());
-//            existingStudent.setEmail(updatedStudent.getEmail());
-//            existingStudent.setCourse(updatedStudent.getCourse());
-//
-//            // Step 3: Save updated student
-//            return studentRepository.save(existingStudent);
-//        }
-//
-//        // Step 4: If student not found
-//        return null;
-//    }
+    // =========================
+    // UPDATE STUDENT
+    // =========================
     public Student updateStudent(Long id, Student updatedStudent) {
 
         Student existingStudent = studentRepository.findById(id)
@@ -87,5 +86,10 @@ public class StudentService {
         return studentRepository.save(existingStudent);
     }
 
-
+    // =========================
+    // DELETE STUDENT
+    // =========================
+    public void deleteStudent(Long id) {
+        studentRepository.deleteById(id);
+    }
 }

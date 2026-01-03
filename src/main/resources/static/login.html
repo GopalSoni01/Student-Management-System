@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Login</title>
+</head>
+<body>
+
+<h2>Login</h2>
+
+<form id="loginForm">
+    <label>Email:</label><br>
+    <input type="email" id="email" required><br><br>
+
+    <label>Password:</label><br>
+    <input type="password" id="password" required><br><br>
+
+    <button type="submit">Login</button>
+</form>
+
+<p id="message"></p>
+
+<script>
+    document.getElementById("loginForm").addEventListener("submit", function (e) {
+        e.preventDefault();
+
+        const email = document.getElementById("email").value;
+        const password = document.getElementById("password").value;
+
+        fetch("http://localhost:8080/auth/login", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                email: email,
+                password: password
+            })
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error("Invalid email or password");
+            }
+            return response.text();
+        })
+        .then(token => {
+            // ✅ save token ONLY on success
+            localStorage.setItem("token", token);
+            window.location.href = "/students.html";
+        })
+        .catch(error => {
+            document.getElementById("message").innerText = error.message;
+            localStorage.removeItem("token"); // safety
+        });
+    });
+</script>
+
+
+</body>
+</html>

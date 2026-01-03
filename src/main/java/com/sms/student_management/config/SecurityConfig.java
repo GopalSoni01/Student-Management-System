@@ -1,7 +1,6 @@
 package com.sms.student_management.config;
 
 import com.sms.student_management.jwt.JwtAuthenticationFilter;
-
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -43,15 +42,16 @@ public class SecurityConfig {
                 )
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
-                                "/signup.html",
                                 "/login.html",
+                                "/signup.html",
+                                "/students.html",
                                 "/",
                                 "/index.html",
                                 "/css/**",
                                 "/js/**",
                                 "/images/**"
                         ).permitAll()
-                        .requestMatchers("/auth/signup", "/auth/login").permitAll()
+                        .requestMatchers("/auth/**").permitAll()
                         .requestMatchers("/students/**").authenticated()
                         .anyRequest().authenticated()
                 )
