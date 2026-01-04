@@ -8,22 +8,6 @@ import jakarta.validation.constraints.Pattern;
 @Table(name = "students")
 public class Student {
 
-//    @Id
-//    @GeneratedValue(strategy = GenerationType.IDENTITY)
-//    private Long id;
-//
-////    private String name;
-////    private String email;
-////    private String course;
-//@NotBlank(message = "Name cannot be empty")
-//private String name;
-//
-//    @Email(message = "Email should be valid")
-//    @NotBlank(message = "Email cannot be empty")
-//    private String email;
-//
-//    @NotBlank(message = "Course cannot be empty")
-//    private String course;
 @Id
 @GeneratedValue(strategy = GenerationType.IDENTITY)
 private Long id;
