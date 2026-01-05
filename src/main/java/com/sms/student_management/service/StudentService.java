@@ -8,6 +8,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import com.sms.student_management.Student;
+import com.sms.student_management.exception.EmailAlreadyExistsException;
+import com.sms.student_management.exception.StudentNotFoundException;
 import com.sms.student_management.repository.StudentRepository;
 
 @Service
@@ -21,19 +23,21 @@ public class StudentService {
     }
 
     // =========================
-    // SAVE STUDENT (with email check)
+    // SAVE STUDENT
     // =========================
     public Student saveStudent(Student student) {
 
         if (studentRepository.existsByEmail(student.getEmail())) {
-            throw new RuntimeException("This email already exists");
+            throw new EmailAlreadyExistsException(
+                    "Email already exists: " + student.getEmail()
+            );
         }
 
         return studentRepository.save(student);
     }
 
     // =========================
-    // ROLE-BASED FETCH (NEW)
+    // ROLE-BASED FETCH
     // =========================
     public List<Student> getStudentsBasedOnRole() {
 
@@ -62,7 +66,11 @@ public class StudentService {
     // =========================
     public Student getStudentById(Long id) {
         return studentRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Student not found with id " + id));
+                .orElseThrow(() ->
+                        new StudentNotFoundException(
+                                "Student not found with id " + id
+                        )
+                );
     }
 
     // =========================
@@ -71,11 +79,18 @@ public class StudentService {
     public Student updateStudent(Long id, Student updatedStudent) {
 
         Student existingStudent = studentRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Student not found"));
+                .orElseThrow(() ->
+                        new StudentNotFoundException(
+                                "Student not found with id " + id
+                        )
+                );
 
+        // Check email duplication
         if (!existingStudent.getEmail().equals(updatedStudent.getEmail())) {
             if (studentRepository.existsByEmail(updatedStudent.getEmail())) {
-                throw new RuntimeException("This email already exists");
+                throw new EmailAlreadyExistsException(
+                        "Email already exists: " + updatedStudent.getEmail()
+                );
             }
         }
 
@@ -90,6 +105,13 @@ public class StudentService {
     // DELETE STUDENT
     // =========================
     public void deleteStudent(Long id) {
+
+        if (!studentRepository.existsById(id)) {
+            throw new StudentNotFoundException(
+                    "Student not found with id " + id
+            );
+        }
+
         studentRepository.deleteById(id);
     }
 }
