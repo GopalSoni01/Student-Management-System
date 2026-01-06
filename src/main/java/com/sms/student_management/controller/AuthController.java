@@ -1,5 +1,8 @@
 package com.sms.student_management.controller;
 
+import com.sms.student_management.dto.StudentResponseDTO;
+import com.sms.student_management.service.StudentService;
+import com.sms.student_management.service.UserService;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -12,10 +15,12 @@ import com.sms.student_management.Student;
 import com.sms.student_management.entity.User;
 import com.sms.student_management.repository.UserRepository;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/auth")
 public class AuthController {
-
+    private final UserService userService;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
@@ -27,7 +32,9 @@ public class AuthController {
                           PasswordEncoder passwordEncoder,
                           AuthenticationManager authenticationManager,
                           JwtUtil jwtUtil,
-                          StudentRepository studentRepository) {
+                          StudentRepository studentRepository,
+                          UserService userService) {
+        this.userService = userService;
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.authenticationManager = authenticationManager;
@@ -79,4 +86,10 @@ public class AuthController {
         throw new RuntimeException("Invalid credentials");
     }
 
+    @GetMapping("/profile")
+    public List<StudentResponseDTO> profile(){
+        return userService.getProfileBasedOnRole();
+
+    }
+    // READ - Get all students
 }

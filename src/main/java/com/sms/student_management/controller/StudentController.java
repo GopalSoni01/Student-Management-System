@@ -1,10 +1,13 @@
 package com.sms.student_management.controller;
 
 import com.sms.student_management.Student;
+import com.sms.student_management.dto.StudentRequestDTO;
+import com.sms.student_management.dto.StudentUpdateRequestDTO;
+import com.sms.student_management.dto.StudentResponseDTO;
 import com.sms.student_management.service.StudentService;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
-
+import org.springframework.security.access.prepost.PreAuthorize;
 import java.util.List;
 
 @RestController
@@ -20,24 +23,27 @@ public class StudentController {
 
     // CREATE - Add student
     @PostMapping
-    public Student createStudent(@Valid @RequestBody Student student) {
-        return studentService.saveStudent(student);
+    public StudentResponseDTO createStudent(
+            @Valid @RequestBody StudentRequestDTO dto) {
+        return studentService.createStudent(dto);
     }
 
     // READ - Get all students
     @GetMapping
-    public List<Student> getStudents() {
+    public List<StudentResponseDTO> getStudents() {
         return studentService.getStudentsBasedOnRole();
     }
 
 
     // READ - Get student by ID
     @GetMapping("/{id}")
-    public Student getStudentById(@PathVariable Long id) {
+    public StudentResponseDTO getStudentById(@PathVariable Long id) {
         return studentService.getStudentById(id);
     }
 
+
     // DELETE - Delete student
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
     public String deleteStudent(@PathVariable Long id) {
         studentService.deleteStudent(id);
@@ -45,9 +51,9 @@ public class StudentController {
     }
     // UPDATE student
     @PutMapping("/{id}")
-    public Student updateStudent(
+    public StudentResponseDTO updateStudent(
             @PathVariable Long id,
-            @Valid @RequestBody Student student) {
-        return studentService.updateStudent(id, student);
+            @Valid @RequestBody StudentUpdateRequestDTO dto) {
+        return studentService.updateStudent(id, dto);
     }
 }
