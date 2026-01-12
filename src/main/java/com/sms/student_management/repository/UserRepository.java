@@ -8,7 +8,9 @@ import com.sms.student_management.entity.User;
 
 public interface UserRepository extends JpaRepository<User, Long> {
 
-    Optional<User> findByEmail(String email);
-
     boolean existsByEmail(String email);
+    boolean existsByMobile(String mobile);
+
+    Optional<User> findByEmail(String email);
+    Optional<User> findByMobile(String mobile);
 }

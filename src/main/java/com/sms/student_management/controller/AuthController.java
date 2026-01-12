@@ -1,95 +1,29 @@
 package com.sms.student_management.controller;
 
-import com.sms.student_management.dto.StudentResponseDTO;
-import com.sms.student_management.service.StudentService;
-import com.sms.student_management.service.UserService;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
-import com.sms.student_management.jwt.JwtUtil;
-import com.sms.student_management.repository.StudentRepository;
-import com.sms.student_management.Student;
 
-import com.sms.student_management.entity.User;
-import com.sms.student_management.repository.UserRepository;
-
-import java.util.List;
+import com.sms.student_management.dto.RegisterRequestDTO;
+import com.sms.student_management.dto.LoginRequestDTO;
+import com.sms.student_management.service.AuthService;
 
 @RestController
 @RequestMapping("/auth")
 public class AuthController {
-    private final UserService userService;
-    private final UserRepository userRepository;
-    private final PasswordEncoder passwordEncoder;
-    private final AuthenticationManager authenticationManager;
-    private final JwtUtil jwtUtil;
 
-    private final StudentRepository studentRepository;
+    private final AuthService authService;
 
-    public AuthController(UserRepository userRepository,
-                          PasswordEncoder passwordEncoder,
-                          AuthenticationManager authenticationManager,
-                          JwtUtil jwtUtil,
-                          StudentRepository studentRepository,
-                          UserService userService) {
-        this.userService = userService;
-        this.userRepository = userRepository;
-        this.passwordEncoder = passwordEncoder;
-        this.authenticationManager = authenticationManager;
-        this.jwtUtil = jwtUtil;
-        this.studentRepository = studentRepository;
+    public AuthController(AuthService authService) {
+        this.authService = authService;
     }
 
-
-    // SIGNUP
-    @PostMapping("/signup")
-    public String signup(@RequestBody User user) {
-
-        if (userRepository.existsByEmail(user.getEmail())) {
-            return "Email already registered";
-        }
-
-        // save user
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
-        user.setRole("STUDENT");   // default role
-        userRepository.save(user);
-
-        // ✅ AUTO-CREATE STUDENT RECORD
-        Student student = new Student();
-        student.setEmail(user.getEmail());
-        student.setName("New Student"); // can be updated later
-        student.setCourse("Not Assigned");
-
-        studentRepository.save(student);
-
-        return "User and Student created successfully";
+    @PostMapping("/register")
+    public String register(@Valid @RequestBody RegisterRequestDTO dto) {
+        return authService.register(dto);
     }
 
-
-    // LOGIN
     @PostMapping("/login")
-    public String login(@RequestBody User user) {
-
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        user.getEmail(),
-                        user.getPassword()
-                )
-        );
-
-        if (authentication.isAuthenticated()) {
-            return jwtUtil.generateToken(user.getEmail());
-        }
-
-        throw new RuntimeException("Invalid credentials");
+    public String login(@Valid @RequestBody LoginRequestDTO dto) {
+        return authService.login(dto);
     }
-
-    @GetMapping("/profile")
-    public List<StudentResponseDTO> profile(){
-        return userService.getProfileBasedOnRole();
-
-    }
-    // READ - Get all students
 }

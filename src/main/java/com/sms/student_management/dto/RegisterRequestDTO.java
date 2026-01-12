@@ -1,34 +1,27 @@
-package com.sms.student_management.entity;
+package com.sms.student_management.dto;
 
-import jakarta.persistence.*;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 
-@Entity
-@Table(name = "users")
-public class User {
+public class RegisterRequestDTO {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
-    @Column(nullable = false)
+    @NotBlank(message = "Full name is required")
     private String fullName;
 
-    @Column(nullable = false, unique = true)
+    @Email(message = "Invalid email")
     private String email;
 
-    @Column(nullable = false, unique = true)
+    @Pattern(
+            regexp = "^[6-9]\\d{9}$",
+            message = "Invalid mobile number"
+    )
     private String mobile;
 
-    @Column(nullable = false)
+    @NotBlank(message = "Password is required")
     private String password;
 
-    @Column(nullable = false)
-    private String role;
-
     // getters & setters
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-
     public String getFullName() { return fullName; }
     public void setFullName(String fullName) { this.fullName = fullName; }
 
@@ -40,7 +33,4 @@ public class User {
 
     public String getPassword() { return password; }
     public void setPassword(String password) { this.password = password; }
-
-    public String getRole() { return role; }
-    public void setRole(String role) { this.role = role; }
 }
