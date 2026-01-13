@@ -1,4 +1,8 @@
 package com.sms.student_management.service;
+import org.springframework.web.multipart.MultipartFile;
+import java.nio.file.*;
+import java.io.IOException;
+import java.util.UUID;
 
 import com.sms.student_management.Student;
 import com.sms.student_management.dto.StudentProfileRequestDTO;
@@ -70,4 +74,49 @@ public class StudentProfileService {
                 .orElseThrow(() ->
                         new RuntimeException("Profile not created"));
     }
+    public String uploadProfileImage(MultipartFile image) {
+
+        if (image.isEmpty()) {
+            throw new RuntimeException("Image file is required");
+        }
+
+        Authentication auth =
+                SecurityContextHolder.getContext().getAuthentication();
+
+        String email = auth.getName();
+
+        Student student = studentRepository.findByEmail(email)
+                .orElseThrow(() ->
+                        new StudentNotFoundException("Student not found"));
+
+        StudentProfile profile = profileRepository
+                .findByStudentId(student.getId())
+                .orElseThrow(() ->
+                        new RuntimeException("Profile not created"));
+
+        try {
+            // Create folder if not exists
+            Path uploadPath = Paths.get("uploads/profile-images");
+            if (!Files.exists(uploadPath)) {
+                Files.createDirectories(uploadPath);
+            }
+
+            // Generate unique file name
+            String fileName = UUID.randomUUID() + "_" + image.getOriginalFilename();
+            Path filePath = uploadPath.resolve(fileName);
+
+            // Save file
+            Files.copy(image.getInputStream(), filePath);
+
+            // Save path in DB
+            profile.setProfileImageUrl("/uploads/profile-images/" + fileName);
+            profileRepository.save(profile);
+
+            return "Profile image uploaded successfully";
+
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to upload image");
+        }
+    }
+
 }

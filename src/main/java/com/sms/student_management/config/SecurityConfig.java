@@ -53,7 +53,7 @@ public class SecurityConfig {
                                 "/js/**",
                                 "/images/**"
                         ).permitAll()
-                        .requestMatchers("/auth/**").permitAll()
+                        .requestMatchers("/auth/**","/uploads/**").permitAll()
                         .requestMatchers("/students/**").authenticated()
                         .anyRequest().authenticated()
                 )
