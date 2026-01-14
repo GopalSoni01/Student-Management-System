@@ -12,6 +12,10 @@ public class AdminStudentResponseDTO {
     private String address;
     private String profileImageUrl;
 
+    // ✅ NEW FIELD
+    private boolean deleted;
+
+    // ✅ UPDATED CONSTRUCTOR
     public AdminStudentResponseDTO(
             Long studentId,
             String name,
@@ -20,7 +24,8 @@ public class AdminStudentResponseDTO {
             String fatherName,
             String fatherOccupation,
             String address,
-            String profileImageUrl) {
+            String profileImageUrl,
+            boolean deleted) {
 
         this.studentId = studentId;
         this.name = name;
@@ -30,9 +35,10 @@ public class AdminStudentResponseDTO {
         this.fatherOccupation = fatherOccupation;
         this.address = address;
         this.profileImageUrl = profileImageUrl;
+        this.deleted = deleted;
     }
 
-    // getters only (admin view = read-only)
+    // getters (read-only for admin view)
     public Long getStudentId() { return studentId; }
     public String getName() { return name; }
     public String getEmail() { return email; }
@@ -41,4 +47,7 @@ public class AdminStudentResponseDTO {
     public String getFatherOccupation() { return fatherOccupation; }
     public String getAddress() { return address; }
     public String getProfileImageUrl() { return profileImageUrl; }
+
+    // ✅ NEW GETTER
+    public boolean isDeleted() { return deleted; }
 }

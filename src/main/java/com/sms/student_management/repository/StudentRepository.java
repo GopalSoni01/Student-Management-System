@@ -25,11 +25,20 @@ public interface StudentRepository extends JpaRepository<Student, Long> {
         p.fatherName,
         p.fatherOccupation,
         p.address,
-        p.profileImageUrl
+        p.profileImageUrl,
+        s.deleted
     )
     FROM Student s
     LEFT JOIN StudentProfile p ON p.student = s
 """)
     List<AdminStudentResponseDTO> findAllStudentsForAdmin();
+    // Only active students
+    List<Student> findByDeletedFalse();
+
+    // Find active student by id
+    Optional<Student> findByIdAndDeletedFalse(Long id);
+
+    // Find active student by email
+    Optional<Student> findByEmailAndDeletedFalse(String email);
 
 }

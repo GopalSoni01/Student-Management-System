@@ -27,7 +27,8 @@ private Long id;
 
     @NotBlank(message = "Course is required")
     private String course;
-
+    @Column(nullable = false)
+    private boolean deleted = false;
     // getters and setters
     public Long getId() {
         return id;
@@ -60,4 +61,6 @@ private Long id;
     public void setCourse(String course) {
         this.course = course;
     }
+    public boolean isDeleted() { return deleted; }
+    public void setDeleted(boolean deleted) { this.deleted = deleted; }
 }

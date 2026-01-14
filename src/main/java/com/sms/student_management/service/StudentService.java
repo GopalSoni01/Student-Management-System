@@ -6,11 +6,11 @@ import java.util.Optional;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
-import com.sms.student_management.dto.StudentUpdateRequestDTO;
 
 import com.sms.student_management.Student;
 import com.sms.student_management.dto.StudentRequestDTO;
 import com.sms.student_management.dto.StudentResponseDTO;
+import com.sms.student_management.dto.StudentUpdateRequestDTO;
 import com.sms.student_management.exception.EmailAlreadyExistsException;
 import com.sms.student_management.exception.StudentNotFoundException;
 import com.sms.student_management.repository.StudentRepository;
@@ -20,13 +20,12 @@ public class StudentService {
 
     private final StudentRepository studentRepository;
 
-    // Constructor Injection
     public StudentService(StudentRepository studentRepository) {
         this.studentRepository = studentRepository;
     }
 
     // =========================
-    // CREATE STUDENT (DTO)
+    // CREATE STUDENT
     // =========================
     public StudentResponseDTO createStudent(StudentRequestDTO dto) {
 
@@ -41,33 +40,32 @@ public class StudentService {
 
         return mapToResponse(savedStudent);
     }
+
+    // =========================
+    // UPDATE STUDENT (DTO)
+    // =========================
     public StudentResponseDTO updateStudent(Long id, StudentUpdateRequestDTO dto) {
 
-        Student existingStudent = studentRepository.findById(id)
+        Student existingStudent = studentRepository.findByIdAndDeletedFalse(id)
                 .orElseThrow(() ->
                         new StudentNotFoundException(
                                 "Student not found with id " + id
                         )
                 );
 
-        // Email duplication check
-        if (!existingStudent.getEmail().equals(dto.getEmail())) {
-            if (studentRepository.existsByEmail(dto.getEmail())) {
-                throw new EmailAlreadyExistsException(
-                        "Email already exists: " + dto.getEmail()
-                );
-            }
+        if (!existingStudent.getEmail().equals(dto.getEmail())
+                && studentRepository.existsByEmail(dto.getEmail())) {
+            throw new EmailAlreadyExistsException(
+                    "Email already exists: " + dto.getEmail()
+            );
         }
 
         existingStudent.setName(dto.getName());
         existingStudent.setEmail(dto.getEmail());
         existingStudent.setCourse(dto.getCourse());
 
-        Student updatedStudent = studentRepository.save(existingStudent);
-
-        return mapToResponse(updatedStudent);
+        return mapToResponse(studentRepository.save(existingStudent));
     }
-
 
     // =========================
     // ROLE-BASED FETCH
@@ -82,17 +80,17 @@ public class StudentService {
         boolean isAdmin = authentication.getAuthorities().stream()
                 .anyMatch(auth -> auth.getAuthority().equals("ROLE_ADMIN"));
 
-        // ADMIN → ALL STUDENTS
+        // ADMIN → ALL ACTIVE STUDENTS
         if (isAdmin) {
-            return studentRepository.findAll()
+            return studentRepository.findByDeletedFalse()
                     .stream()
                     .map(this::mapToResponse)
                     .toList();
         }
 
-        // STUDENT → ONLY OWN DATA
+        // STUDENT → ONLY OWN ACTIVE DATA
         Optional<Student> student =
-                studentRepository.findByEmail(email);
+                studentRepository.findByEmailAndDeletedFalse(email);
 
         return student
                 .map(s -> List.of(mapToResponse(s)))
@@ -104,7 +102,7 @@ public class StudentService {
     // =========================
     public StudentResponseDTO getStudentById(Long id) {
 
-        Student student = studentRepository.findById(id)
+        Student student = studentRepository.findByIdAndDeletedFalse(id)
                 .orElseThrow(() ->
                         new StudentNotFoundException(
                                 "Student not found with id " + id
@@ -115,46 +113,17 @@ public class StudentService {
     }
 
     // =========================
-    // UPDATE STUDENT
-    // =========================
-    public Student updateStudent(Long id, Student updatedStudent) {
-
-        Student existingStudent = studentRepository.findById(id)
-                .orElseThrow(() ->
-                        new StudentNotFoundException(
-                                "Student not found with id " + id
-                        )
-                );
-
-        if (!existingStudent.getEmail().equals(updatedStudent.getEmail())) {
-            if (studentRepository.existsByEmail(updatedStudent.getEmail())) {
-                throw new EmailAlreadyExistsException(
-                        "Email already exists: " + updatedStudent.getEmail()
-                );
-            }
-        }
-
-        existingStudent.setName(updatedStudent.getName());
-        existingStudent.setEmail(updatedStudent.getEmail());
-        existingStudent.setCourse(updatedStudent.getCourse());
-
-        return studentRepository.save(existingStudent);
-    }
-
-    // =========================
-    // DELETE STUDENT
+    // SOFT DELETE STUDENT
     // =========================
     public void deleteStudent(Long id) {
 
-        if (!studentRepository.existsById(id)) {
-            throw new StudentNotFoundException(
-                    "Student not found with id " + id
-            );
-        }
+        Student student = studentRepository.findByIdAndDeletedFalse(id)
+                .orElseThrow(() ->
+                        new StudentNotFoundException("Student not found"));
 
-        studentRepository.deleteById(id);
+        student.setDeleted(true);
+        studentRepository.save(student);
     }
-
 
     // =========================
     // DTO → ENTITY
