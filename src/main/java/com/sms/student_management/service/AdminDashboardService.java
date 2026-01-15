@@ -3,7 +3,8 @@ package com.sms.student_management.service;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
-
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import com.sms.student_management.dto.AdminStudentResponseDTO;
 import com.sms.student_management.repository.StudentRepository;
 
@@ -16,7 +17,7 @@ public class AdminDashboardService {
         this.studentRepository = studentRepository;
     }
 
-    public List<AdminStudentResponseDTO> getAllStudents() {
-        return studentRepository.findAllStudentsForAdmin();
+    public Page<AdminStudentResponseDTO> getAllStudents(Pageable pageable) {
+        return studentRepository.findAllStudentsForAdmin(pageable);
     }
 }
